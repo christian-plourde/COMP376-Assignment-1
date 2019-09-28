@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class submarine_script : MonoBehaviour
 {
@@ -13,10 +14,13 @@ public class submarine_script : MonoBehaviour
     public float water_level; //this is the level of the water (which cannot be exceeded when moving the sub up)
     public float move_speed; //the speed at which the sub will move around
     public Transform sub_transform; //this is the transform associated to the submarine (the player character)
+    public boat_script boat;
+    int gold_bar_count;
+
     void Start()
     {
         //when the game starts, place the submarine in the middle of the screen
-        sub_transform.position = new Vector3(0, 0, 0);
+        sub_transform.position = new Vector3(0, 0, -1);
         direction = 1;
         facing_right = true;
     }
@@ -25,6 +29,28 @@ public class submarine_script : MonoBehaviour
     void Update()
     {
         check_inputs();
+
+        //next we need to check if we are close to any gold
+        
+        GameObject[] gold_objects = boat.gold_objects.ToArray<GameObject>();
+        for(int i = 0; i < boat.gold_objects.Count; i++)
+        {
+
+            if ((gold_objects[i].transform.position - sub_transform.position).magnitude < 0.5)
+            {
+                boat.removeGoldBar(gold_objects[i]);
+                gold_bar_count++;
+            }
+        }
+
+        //now we should check if we are close to the boat
+        //if we are we should drop the gold into it
+        if((sub_transform.position - boat.boat_transform.position).magnitude < 1)
+        {
+            boat.increase_total_gold(gold_bar_count);
+            gold_bar_count = 0;
+        }
+        
     }
 
     /// <summary>
