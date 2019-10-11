@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
+using System;
 
 public class submarine_script : MonoBehaviour
 {
@@ -16,6 +18,10 @@ public class submarine_script : MonoBehaviour
     public Transform sub_transform; //this is the transform associated to the submarine (the player character)
     public boat_script boat;
     int gold_bar_count;
+    int oxygen_cylinders;
+    public Text life_count;
+    bool immune; //important to set this to true for a few seconds after player loses a life
+    DateTime immune_start;
 
     void Start()
     {
@@ -23,23 +29,31 @@ public class submarine_script : MonoBehaviour
         sub_transform.position = new Vector3(0, 0, -1);
         direction = 1;
         facing_right = true;
+        oxygen_cylinders = 2;
+        life_count.text = "Oxygen Cylinders: " + oxygen_cylinders;
+        immune_start = DateTime.Now;
+        immune = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+
         check_inputs();
 
         //next we need to check if we are close to any gold
         
-        GameObject[] gold_objects = boat.gold_objects.ToArray<GameObject>();
+        Gold[] gold_objects = boat.gold_objects.ToArray<Gold>();
         for(int i = 0; i < boat.gold_objects.Count; i++)
         {
 
-            if ((gold_objects[i].transform.position - sub_transform.position).magnitude < 0.5)
+            if ((gold_objects[i].GoldObject.transform.position - sub_transform.position).magnitude < 0.5)
             {
                 boat.removeGoldBar(gold_objects[i]);
-                gold_bar_count++;
+                gold_bar_count+= gold_objects[i].Value;
+                //set the move speed as a function of the gold_bar_count
+                if(move_speed > 0.1)
+                    move_speed -= 0.1f*gold_objects[i].Value;
             }
         }
 
@@ -50,7 +64,47 @@ public class submarine_script : MonoBehaviour
             boat.increase_total_gold(gold_bar_count);
             gold_bar_count = 0;
         }
+
+        //finally we need to check if the boat is close to one of the fish
+        //if it is then the player should lose a life
+
+        //first let's check if the character should keep his immunity (if he has been immune for less than 2 seconds he should stay immune)
+        if ((DateTime.Now - immune_start).TotalSeconds >= 2)
+            immune = false;
+
+
+        foreach(AngryFish fish in boat.angry_fish_list)
+        {
+
+        }
         
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if(!immune)
+        {
+            lose_life();
+            immune = true;
+            immune_start = DateTime.Now;
+        }
+    }
+
+    private void lose_life()
+    {
+        oxygen_cylinders--;
+        life_count.text = "Oxygen Cylinders: " + oxygen_cylinders;
+
+        //once the life has been lost check if the player has 0 lives
+        //if that is the case place him back at the boat and restore his cylinders. Also make his score 0
+        if(oxygen_cylinders <= 0)
+        {
+            boat.total_gold = 0;
+            oxygen_cylinders = 2;
+            life_count.text = "Oxygen Cylinders: " + oxygen_cylinders;
+            gold_bar_count = 0;
+            sub_transform.position = boat.transform.position;
+        }
     }
 
     /// <summary>
