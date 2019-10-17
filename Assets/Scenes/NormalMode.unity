@@ -701,6 +701,11 @@ MonoBehaviour:
   total_gold: 0
   boat_transform: {fileID: 1766683825}
   text: {fileID: 2002539040}
+  level_indicator_text: {fileID: 1775292333}
+  main_menu_scene_name: MainMenu
+  time_in_level: 0
+  level_time: 30
+  level: 0
 --- !u!1 &1775292331
 GameObject:
   m_ObjectHideFlags: 0

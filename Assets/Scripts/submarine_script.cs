@@ -72,11 +72,6 @@ public class submarine_script : MonoBehaviour
         if ((DateTime.Now - immune_start).TotalSeconds >= 2)
             immune = false;
 
-
-        foreach(AngryFish fish in boat.angry_fish_list)
-        {
-
-        }
         
     }
 
@@ -104,6 +99,15 @@ public class submarine_script : MonoBehaviour
             life_count.text = "Oxygen Cylinders: " + oxygen_cylinders;
             gold_bar_count = 0;
             sub_transform.position = boat.transform.position;
+
+            //finally we need to reset the level to level 1.
+            boat.level = 1;
+            boat.level_indicator_text.text = "Level: " + boat.level;
+            //and decrease the speed of the angry fish
+            foreach(AngryFish fish in boat.angry_fish_list)
+            {
+                fish.MoveSpeed = UnityEngine.Random.Range(0.02f, 0.08f);
+            }
         }
     }
 
@@ -122,6 +126,7 @@ public class submarine_script : MonoBehaviour
         //this is the key to move up
         if(Input.GetAxis("Vertical") > 0 && sub_transform.position.y < water_level)
         {
+            
             sub_transform.Translate(Vector2.up * move_speed * Time.deltaTime);
         }
 
