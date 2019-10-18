@@ -11,7 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 5ae29a57f6f0666468f9a8cc40dd67f3
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
-    path: Assets/Scenes/HardMode.unity
-    guid: 1baba1c3c2c297b47b8574c00d433405
+    path: Assets/Scenes/VariantMode.unity
+    guid: 538294d8e19fa034eaeb958e3932a754
   m_configObjects: {}

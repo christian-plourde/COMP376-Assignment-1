@@ -39,6 +39,64 @@ public class Gold
 
 }
 
+public class Octopus
+{
+    GameObject octopus_object;
+    float move_speed;
+    float scale;
+    bool spawned;
+    float spawn_time;
+    int direction;
+
+    public int Direction
+    {
+        get { return direction; }
+        set { direction = value; }
+    }
+
+    public float SpawnTime
+    {
+        get { return spawn_time; }
+    }
+
+    public bool Spawned
+    {
+        get { return spawned; }
+    }
+
+    public float Scale
+    {
+        get { return scale; }
+    }
+
+    public float MoveSpeed
+    {
+        get { return move_speed; }
+        set { move_speed = value; }
+    }
+
+    public GameObject Oct
+    {
+        get { return octopus_object; }
+    }
+
+    public Octopus(GameObject oct)
+    {
+        this.octopus_object = oct;
+        move_speed = UnityEngine.Random.Range(0.02f, 0.08f);
+        scale = UnityEngine.Random.Range(1.0f, 2.0f);
+        octopus_object.transform.localScale = new Vector3(scale, scale, scale);
+        spawned = true;
+        direction = 1;
+    }
+
+    public Octopus(float level_time)
+    {
+        spawned = false;
+        spawn_time = UnityEngine.Random.Range(0, level_time);
+    }
+}
+
 public class AngryFish
 {
     GameObject fish_object;
@@ -75,6 +133,7 @@ public class boat_script : MonoBehaviour
     // Start is called before the first frame update
     DateTime last_gold_add;
     public GameObject angry_fish;
+    public GameObject octopus;
     public GameObject gold_object;
     public LinkedList<Gold> gold_objects;
     public LinkedList<AngryFish> angry_fish_list;
@@ -87,12 +146,23 @@ public class boat_script : MonoBehaviour
     public float time_in_level; //this is the total time spent in this level
     public float level_time; //the time that a player should spend in a level
     public int level; //the level we are on.
+    Octopus[] octopus_list;
+    bool variant_mode;
 
     void Start()
     {
-        
+        variant_mode = false;
+        //check if we are in variant mode
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "VariantMode")
+            variant_mode = true;
+
         gold_objects = new LinkedList<Gold>();
         angry_fish_list = new LinkedList<AngryFish>();
+        octopus_list = new Octopus[2];
+        for(int i = 0; i < octopus_list.Length; i++)
+        {
+            octopus_list[i] = new Octopus(level_time);
+        }
         last_gold_add = DateTime.Now;
         total_gold = 0;
 
@@ -109,7 +179,7 @@ public class boat_script : MonoBehaviour
 
         //also set level to 1
         level = 1;
-
+        
     }
 
     // Update is called once per frame
@@ -139,6 +209,39 @@ public class boat_script : MonoBehaviour
             if(fish.Fish.transform.position.x > 15)
                 fish.Fish.transform.position = new Vector3(-15.0f, UnityEngine.Random.Range(-3.1f, 1.1f), -1);
         }
+
+
+        //check if an octopus should spawn
+        for(int i = 0; i < octopus_list.Length; i++)
+        {
+            if (!octopus_list[i].Spawned && time_in_level >= octopus_list[i].SpawnTime)
+            {
+                octopus_list[i] = new Octopus(Instantiate(octopus, new Vector3(-10.1f, UnityEngine.Random.Range(-3.1f, 1.1f), -1), transform.rotation));
+            }
+        }
+
+        //finally move all the spawned octopus
+        foreach (Octopus octopus in octopus_list)
+        {
+
+            //check if null
+            if (octopus.Oct == null)
+                continue;
+
+            if(octopus.Oct.transform.position.x > 10)
+            {
+                octopus.Direction = -1;
+            }
+
+            else if(octopus.Oct.transform.position.x <= -10)
+            {
+                octopus.Direction = 1;
+            }
+
+            octopus.Oct.transform.Translate(new Vector3(octopus.Direction * octopus.MoveSpeed, 0, 0));
+
+        }
+
     }
 
     private void check_level_update()
@@ -158,6 +261,16 @@ public class boat_script : MonoBehaviour
             }
             //finally we need to increase the level indicator in the UI.
             level_indicator_text.text = "Level: " + ++level;
+
+            
+
+            //reset the octopus
+            for (int i = 0; i < octopus_list.Length; i++)
+            {
+                Destroy(octopus_list[i].Oct);
+                octopus_list[i] = new Octopus(level_time);
+            }
+
         }
     }
 

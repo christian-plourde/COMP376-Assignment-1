@@ -15,6 +15,7 @@ public class submarine_script : MonoBehaviour
     public float ground_level; //this is the level of the ground that cannot be passed
     public float water_level; //this is the level of the water (which cannot be exceeded when moving the sub up)
     public float move_speed; //the speed at which the sub will move around
+    private float init_move_speed;
     public Transform sub_transform; //this is the transform associated to the submarine (the player character)
     public boat_script boat;
     int gold_bar_count;
@@ -22,10 +23,12 @@ public class submarine_script : MonoBehaviour
     public Text life_count;
     bool immune; //important to set this to true for a few seconds after player loses a life
     DateTime immune_start;
+   
 
     void Start()
     {
         //when the game starts, place the submarine in the middle of the screen
+        init_move_speed = move_speed;
         sub_transform.position = new Vector3(0, 0, -1);
         direction = 1;
         facing_right = true;
@@ -62,6 +65,8 @@ public class submarine_script : MonoBehaviour
         if((sub_transform.position - boat.boat_transform.position).magnitude < 1)
         {
             boat.increase_total_gold(gold_bar_count);
+            //we also need to reset the speed of the submarine
+            move_speed = init_move_speed;
             gold_bar_count = 0;
         }
 
@@ -70,9 +75,17 @@ public class submarine_script : MonoBehaviour
 
         //first let's check if the character should keep his immunity (if he has been immune for less than 2 seconds he should stay immune)
         if ((DateTime.Now - immune_start).TotalSeconds >= 2)
+        {
             immune = false;
+            this.GetComponent<SpriteRenderer>().color = Color.white;
+        }
+            
 
-        
+        else if(immune)
+        {
+            //if we are immune make the sprite red
+            this.GetComponent<SpriteRenderer>().color = Color.red;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D col)
@@ -118,20 +131,33 @@ public class submarine_script : MonoBehaviour
     {
         //this is the key to move the submarine down
         //we need to check to make sure that we can move down as well (make sure we stay in frame)
-        if (Input.GetAxis("Vertical") < 0 && sub_transform.position.y > ground_level)
-        {
-            sub_transform.Translate(Vector2.down*move_speed*Time.deltaTime);
-        }
+
+        //the sub should move down slightly every time
+        sub_transform.Translate(Vector2.down * move_speed * 0.5f * Time.deltaTime);
 
         //this is the key to move up
         if(Input.GetAxis("Vertical") > 0 && sub_transform.position.y < water_level)
         {
-            
             sub_transform.Translate(Vector2.up * move_speed * Time.deltaTime);
         }
 
+        if(Input.GetAxis("Vertical") < 0)
+        {
+            sub_transform.Translate(Vector2.down * move_speed * Time.deltaTime);
+        }
+
+        //make sure we dont go out of the water
+        if (sub_transform.position.y >= water_level)
+        {
+            sub_transform.position = new Vector3(sub_transform.position.x, water_level, sub_transform.position.z);
+        }
+
+        //or below the bottom
+        if (sub_transform.position.y <= ground_level)
+            sub_transform.position = new Vector3(sub_transform.position.x, ground_level, sub_transform.position.z);
+
         //this is the key to move left
-        if(Input.GetAxis("Horizontal") < 0)
+        if (Input.GetAxis("Horizontal") < 0)
         {
             //if we move left we have to swap the direction modifier to -1 to flip the keys
             direction = -1;
