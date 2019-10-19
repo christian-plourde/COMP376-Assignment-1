@@ -698,6 +698,7 @@ MonoBehaviour:
   octopus: {fileID: 2159659979856449652, guid: 9dd07dcc6baf3cc4e917ab009fba1023, type: 3}
   gold_object: {fileID: 3361360787053098757, guid: b8d3de53a3da67a4ab4b15105fae98e6,
     type: 3}
+  nitro_cylinder: {fileID: 0}
   gold_generation_interval: 3
   total_gold: 0
   boat_transform: {fileID: 1766683825}
@@ -707,6 +708,7 @@ MonoBehaviour:
   time_in_level: 0
   level_time: 30
   level: 0
+  variant_mode: 0
 --- !u!1 &1775292331
 GameObject:
   m_ObjectHideFlags: 0

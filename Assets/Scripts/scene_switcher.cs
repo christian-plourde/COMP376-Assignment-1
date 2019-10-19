@@ -17,6 +17,7 @@ public class scene_switcher : MonoBehaviour
         
     }
 
+    //will switch to the scene bearing that name
     public void switch_scene(string scene_name)
     {
         SceneManager.LoadScene(scene_name);
